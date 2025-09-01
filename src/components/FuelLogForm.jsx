@@ -1,35 +1,28 @@
 import React, { useState, useContext } from "react";
 import { VehicleContext } from "../context/VehicleContext";
 
-const FuelLogForm = ({ vehicleId }) => {
-  const { vehicles, setVehicles } = useContext(VehicleContext);
+export default function FuelLogForm({ vehicle }) {
+  const { updateVehicle } = useContext(VehicleContext);
+  const [liters, setLiters] = useState("");
   const [odo, setOdo] = useState("");
-  const [fuelQty, setFuelQty] = useState("");
-  const [fuelPrice, setFuelPrice] = useState("");
-  const [date, setDate] = useState(""); // new state for date
+  const [price, setPrice] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const vehicle = vehicles.find((v) => v.id === vehicleId);
-    const lastOdo = vehicle.fuelLogs?.length
-      ? vehicle.fuelLogs[vehicle.fuelLogs.length - 1].odo
-      : 0;
-    const mileage = (odo - lastOdo) / fuelQty;
-
-    const newLog = { id: Date.now(), odo, fuelQty, fuelPrice, mileage, date };
-    vehicle.fuelLogs = [...(vehicle.fuelLogs || []), newLog];
-    setVehicles([...vehicles]);
+    const lastOdo = vehicle.fuelLogs.length ? vehicle.fuelLogs[vehicle.fuelLogs.length-1].odo : vehicle.odo;
+    const distance = Number(odo) - lastOdo;
+    const mileage = distance / Number(liters);
+    const newLog = { id: Date.now(), odo: Number(odo), liters: Number(liters), distance, mileage, price: Number(price) };
+    updateVehicle(vehicle.id, { fuelLogs: [...vehicle.fuelLogs, newLog] });
+    setOdo(""); setLiters(""); setPrice("");
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input type="number" placeholder="ODO" value={odo} onChange={(e) => setOdo(e.target.value)} />
-      <input type="number" placeholder="Fuel Qty" value={fuelQty} onChange={(e) => setFuelQty(e.target.value)} />
-      <input type="number" placeholder="Fuel Price" value={fuelPrice} onChange={(e) => setFuelPrice(e.target.value)} />
-      <input type="date" value={date} onChange={(e) => setDate(e.target.value)} /> {/* new date input */}
-      <button type="submit">Add Fuel Log</button>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-2 mt-2">
+      <input type="number" placeholder="ODO Reading" value={odo} onChange={e => setOdo(e.target.value)} required className="border p-2 rounded" />
+      <input type="number" placeholder="Fuel (liters)" value={liters} onChange={e => setLiters(e.target.value)} required className="border p-2 rounded" />
+      <input type="number" placeholder="Fuel Price" value={price} onChange={e => setPrice(e.target.value)} required className="border p-2 rounded" />
+      <button className="bg-green-500 text-white p-2 rounded">Add Fuel Log</button>
     </form>
   );
-};
-
-export default FuelLogForm;
+}

@@ -2,33 +2,38 @@ import React, { useContext } from "react";
 import { VehicleContext } from "../context/VehicleContext";
 
 export default function FuelLogList({ vehicle }) {
-  const { settings } = useContext(VehicleContext);
+  const { distanceUnit, fuelUnit, currency } = useContext(VehicleContext);
+
+  const calculateMileage = (log, prevLog) => {
+    if (!prevLog) return 0;
+    const distance = log.odo - prevLog.odo;
+    const fuelUsed = log.fuelQty;
+    return distance / fuelUsed;
+  };
 
   return (
-    <div className="mb-4">
-      <h4 className="font-semibold mb-2">Fuel Logs</h4>
-      <table className="w-full border">
+    <div className="mt-4">
+      <h3 className="font-bold mb-2">{vehicle.name} Fuel Logs</h3>
+      <table className="w-full border-collapse border">
         <thead>
           <tr>
-            <th className="border px-2 py-1">Date</th>
-            <th className="border px-2 py-1">Fuel ({settings.fuelUnit})</th>
-            <th className="border px-2 py-1">Price ({settings.currency})</th>
-            <th className="border px-2 py-1">ODO ({settings.distanceUnit})</th>
-            <th className="border px-2 py-1">Mileage ({settings.distanceUnit}/{settings.fuelUnit})</th>
+            <th className="border p-2">Date</th>
+            <th className="border p-2">ODO ({distanceUnit})</th>
+            <th className="border p-2">Fuel ({fuelUnit})</th>
+            <th className="border p-2">Price ({currency})</th>
+            <th className="border p-2">Mileage ({distanceUnit}/{fuelUnit})</th>
           </tr>
         </thead>
         <tbody>
-          {vehicle.fuelLogs.map((log, i) => {
-            const prev = i > 0 ? vehicle.fuelLogs[i - 1] : null;
-            const distance = prev ? log.odo - prev.odo : 0;
-            const mileage = distance && log.amount ? (distance / log.amount).toFixed(2) : "-";
+          {vehicle.fuelLogs.map((log, idx) => {
+            const mileage = idx > 0 ? calculateMileage(log, vehicle.fuelLogs[idx-1]).toFixed(2) : "-";
             return (
-              <tr key={i}>
-                <td className="border px-2 py-1">{log.date}</td>
-                <td className="border px-2 py-1">{log.amount}</td>
-                <td className="border px-2 py-1">{log.price}</td>
-                <td className="border px-2 py-1">{log.odo}</td>
-                <td className="border px-2 py-1">{mileage}</td>
+              <tr key={idx}>
+                <td className="border p-2">{log.date}</td>
+                <td className="border p-2">{log.odo}</td>
+                <td className="border p-2">{log.fuelQty}</td>
+                <td className="border p-2">{log.price}</td>
+                <td className="border p-2">{mileage}</td>
               </tr>
             );
           })}

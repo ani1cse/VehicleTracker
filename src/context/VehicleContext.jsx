@@ -5,54 +5,36 @@ export const VehicleContext = createContext();
 
 export const VehicleProvider = ({ children }) => {
   const [vehicles, setVehicles] = useState([]);
-  const [settings, setSettings] = useState({
-    currency: "$",
-    distanceUnit: "km",
-    fuelUnit: "liters"
-  });
+  const [currency, setCurrency] = useState("$");
+  const [distanceUnit, setDistanceUnit] = useState("km");
+  const [fuelUnit, setFuelUnit] = useState("liters");
 
   useEffect(() => {
-    const loadData = async () => {
-      const data = await fetchVehicles();
-      setVehicles(data.vehicles || []);
-      if (data.settings) setSettings(data.settings);
-    };
-    loadData();
+    fetchVehicles().then(setVehicles);
   }, []);
 
-  const saveData = async (newVehicles, newSettings) => {
-    await saveVehicles({ vehicles: newVehicles, settings: newSettings || settings });
-  };
+  useEffect(() => {
+    if (vehicles.length) saveVehicles(vehicles);
+  }, [vehicles]);
 
-  const addMaintenance = (vehicleId, log) => {
-    const updated = vehicles.map((v) => {
-      if (v.id === vehicleId) {
-        return { ...v, maintenanceLogs: [...v.maintenanceLogs, log], odo: log.odo };
-      }
-      return v;
-    });
-    setVehicles(updated);
-    saveData(updated);
-  };
-
-  const addFuelLog = (vehicleId, log) => {
-    const updated = vehicles.map((v) => {
-      if (v.id === vehicleId) {
-        return { ...v, fuelLogs: [...v.fuelLogs, log], odo: log.odo };
-      }
-      return v;
-    });
-    setVehicles(updated);
-    saveData(updated);
-  };
-
-  const updateSettings = (newSettings) => {
-    setSettings(newSettings);
-    saveData(vehicles, newSettings);
-  };
+  const addVehicle = (vehicle) => setVehicles([...vehicles, vehicle]);
+  const updateVehicle = (id, data) =>
+    setVehicles(vehicles.map(v => (v.id === id ? { ...v, ...data } : v)));
+  const deleteVehicle = (id) => setVehicles(vehicles.filter(v => v.id !== id));
 
   return (
-    <VehicleContext.Provider value={{ vehicles, settings, addMaintenance, addFuelLog, updateSettings }}>
+    <VehicleContext.Provider value={{
+  vehicles,
+  addVehicle,
+  updateVehicle,
+  deleteVehicle,
+  currency,
+  setCurrency,
+  distanceUnit,
+  setDistanceUnit,
+  fuelUnit,
+  setFuelUnit
+}}>
       {children}
     </VehicleContext.Provider>
   );

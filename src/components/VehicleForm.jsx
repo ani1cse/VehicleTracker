@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { VehicleContext } from "../context/VehicleContext";
-import { nanoid } from "nanoid";
+import { v4 as uuid } from "uuid";
 
 export default function VehicleForm() {
   const { addVehicle } = useContext(VehicleContext);
@@ -9,16 +9,15 @@ export default function VehicleForm() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    addVehicle({ id: nanoid(), number, odo: Number(odo), fuelLogs: [], maintenance: [], expenses: [] });
+    addVehicle({ id: uuid(), number, odo: Number(odo), fuelLogs: [], maintenanceLogs: [] });
     setNumber(""); setOdo("");
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-4 border p-4 rounded bg-gray-50">
-      <h3 className="font-bold mb-2">Add Vehicle</h3>
-      <input placeholder="Vehicle Number" value={number} onChange={e => setNumber(e.target.value)} className="border p-1 mr-2 rounded" />
-      <input placeholder="ODO" type="number" value={odo} onChange={e => setOdo(e.target.value)} className="border p-1 mr-2 rounded" />
-      <button type="submit" className="bg-blue-500 text-white px-2 py-1 rounded">Add</button>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-2 p-2 border rounded">
+      <input type="text" placeholder="Vehicle Number" value={number} onChange={e => setNumber(e.target.value)} required className="border p-2 rounded" />
+      <input type="number" placeholder="ODO Reading" value={odo} onChange={e => setOdo(e.target.value)} required className="border p-2 rounded" />
+      <button className="bg-blue-500 text-white p-2 rounded">Add Vehicle</button>
     </form>
   );
 }
