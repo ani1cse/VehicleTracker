@@ -17,7 +17,7 @@ export default function MaintenanceList({ vehicle }) {
           </tr>
         </thead>
         <tbody>
-          {(vehicle.maintenance || []).map((m, i) => (
+          {(vehicle.maintenanceLogs || []).map((m, i) => (
             <tr key={m.id || i}>
               <td className="border px-2 py-1">{m.date}</td>
               <td className="border px-2 py-1">{m.odo}</td>
