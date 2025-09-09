@@ -1,38 +1,38 @@
-import React, { useState } from 'react';
-import { saveMaintenance } from '../api/jsonbin';
+import React, { useState } from "react";
+import { saveMaintenance } from "../api/jsonbin";
 
 export default function MaintenanceForm() {
-  const [description, setDescription] = useState('');
-  const [cost, setCost] = useState('');
-  const [date, setDate] = useState('');
-  const [odo, setOdo] = useState('');
+  const [type, setType] = useState("");
+  const [cost, setCost] = useState("");
+  const [date, setDate] = useState("");
+  const [odo, setOdo] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const newRecord = {
-      description,
+      type,
       cost: parseFloat(cost),
-      date, // already in YYYY-MM-DD format from input[type=date]
+      date,
       odo: parseInt(odo, 10)
     };
 
     await saveMaintenance(newRecord);
 
-    // Clear form
-    setDescription('');
-    setCost('');
-    setDate('');
-    setOdo('');
+    // Reset form
+    setType("");
+    setCost("");
+    setDate("");
+    setOdo("");
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-2">
       <input
         type="text"
-        placeholder="Maintenance Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Maintenance Type"
+        value={type}
+        onChange={(e) => setType(e.target.value)}
         required
       />
       <input
