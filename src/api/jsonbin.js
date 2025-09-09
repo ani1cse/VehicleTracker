@@ -31,7 +31,7 @@ export const saveVehicles = async (vehicles) => {
   });
 };
 
-// Save maintenance for a specific vehicle
+// Save maintenanceLog for a specific vehicle
 export const saveMaintenance = async (vehicleId, newRecord) => {
   const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
     headers: { "X-Master-Key": API_KEY },
@@ -43,8 +43,8 @@ export const saveMaintenance = async (vehicleId, newRecord) => {
     v.id === vehicleId
       ? {
           ...v,
-          maintenance: [
-            ...(v.maintenance || []),
+          maintenanceLogs: [
+            ...(v.maintenanceLogs || []),
             { ...newRecord, id: Date.now() }
           ]
         }
