@@ -28,7 +28,7 @@ export default function VehicleList() {
           <div className="mt-2">
             <h4 className="font-semibold">Maintenance Logs</h4>
             <ul>
-              {v.maintenanceLogs.map(m => <li key={m.id}>{m.description} | Cost: {m.cost}</li>)}
+              {v.maintenanceLogs.map(m => <li key={m.id}> Date: {m.date} |Maintenance Type: {m.type}| ODO: {m.odo} | Cost: {m.cost}</li>)}
             </ul>
           </div>
         </div>

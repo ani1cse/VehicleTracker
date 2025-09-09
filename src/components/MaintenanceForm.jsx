@@ -18,11 +18,15 @@ export default function MaintenanceForm({ vehicle }) {
     }
 
     const newRecord = {
+      id: Date.now(),
       type: type.trim(),
       cost: parseFloat(cost),
       date,
       odo: parseInt(odo, 10)
     };
+// await saveMaintenance(vehicle.id, newRecord);
+
+    
 
     const updatedVehicles = await saveMaintenance(vehicle.id, newRecord);
     setVehicles(updatedVehicles);
