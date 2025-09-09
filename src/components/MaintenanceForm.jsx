@@ -18,7 +18,7 @@ export default function MaintenanceForm({ vehicle }) {
     }
 
     const newRecord = {
-      type,
+      type: type.trim(),
       cost: parseFloat(cost),
       date,
       odo: parseInt(odo, 10)
@@ -27,6 +27,7 @@ export default function MaintenanceForm({ vehicle }) {
     const updatedVehicles = await saveMaintenance(vehicle.id, newRecord);
     setVehicles(updatedVehicles);
 
+    // Clear form
     setType("");
     setCost("");
     setDate("");
@@ -34,35 +35,60 @@ export default function MaintenanceForm({ vehicle }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-2">
-      <input
-        type="text"
-        placeholder="Maintenance Type"
-        value={type}
-        onChange={(e) => setType(e.target.value)}
-        required
-      />
-      <input
-        type="number"
-        placeholder="Cost"
-        value={cost}
-        onChange={(e) => setCost(e.target.value)}
-        required
-      />
-      <input
-        type="date"
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
-        required
-      />
-      <input
-        type="number"
-        placeholder="ODO Reading"
-        value={odo}
-        onChange={(e) => setOdo(e.target.value)}
-        required
-      />
-      <button type="submit">Add Maintenance</button>
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <div>
+        <label className="block font-medium">Maintenance Type</label>
+        <input
+          type="text"
+          placeholder="e.g. Engine Oil Change"
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          required
+          className="border p-1 w-full"
+        />
+      </div>
+
+      <div>
+        <label className="block font-medium">Cost</label>
+        <input
+          type="number"
+          placeholder="e.g. 7800"
+          value={cost}
+          onChange={(e) => setCost(e.target.value)}
+          required
+          className="border p-1 w-full"
+        />
+      </div>
+
+      <div>
+        <label className="block font-medium">Date</label>
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          required
+          className="border p-1 w-full"
+        />
+      </div>
+
+      <div>
+        <label className="block font-medium">ODO Reading</label>
+        <input
+          type="number"
+          placeholder="e.g. 79695"
+          value={odo}
+          onChange={(e) => setOdo(e.target.value)}
+          required
+          className="border p-1 w-full"
+        />
+      </div>
+
+      <button
+        type="submit"
+        className="bg-blue-600 text-white px-4 py-2 rounded"
+      >
+        Add Maintenance
+      </button>
     </form>
   );
 }
