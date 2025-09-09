@@ -12,6 +12,11 @@ export default function MaintenanceForm({ vehicle }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!vehicle?.id) {
+      console.error("No vehicle selected");
+      return;
+    }
+
     const newRecord = {
       type,
       cost: parseFloat(cost),
@@ -20,9 +25,8 @@ export default function MaintenanceForm({ vehicle }) {
     };
 
     const updatedVehicles = await saveMaintenance(vehicle.id, newRecord);
-    setVehicles(updatedVehicles); // refresh context so UI updates
+    setVehicles(updatedVehicles);
 
-    // Reset form
     setType("");
     setCost("");
     setDate("");
