@@ -1,51 +1,47 @@
 import React, { useContext } from "react";
 import { VehicleContext } from "../context/VehicleContext";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
-const SummaryCharts = () => {
-  const { vehicles, settings } = useContext(VehicleContext);
+export default function SummaryCharts() {
+  const { vehicles, distanceUnit, fuelUnit, currency } = useContext(VehicleContext);
 
-  const convertDistance = (val) =>
-    settings.distanceUnit === "mi" ? (val * 0.621371).toFixed(2) : val;
+  const chartData = vehicles.map(v => {
+    const totalFuel = v.fuelLogs.reduce((sum, log) => sum + log.fuelQty, 0);
+    const totalDistance = v.fuelLogs.length > 1
+      ? v.fuelLogs[v.fuelLogs.length - 1].odo - v.fuelLogs[0].odo
+      : 0;
+    const avgMileage = totalFuel > 0 ? (totalDistance / totalFuel).toFixed(2) : 0;
+    const totalPrice = v.fuelLogs.reduce((sum, log) => sum + log.price, 0);
 
-  const convertFuel = (val) =>
-    settings.fuelUnit === "gallons" ? (val * 0.264172).toFixed(2) : val;
-
-  const fuelData = vehicles.map(v => {
-    const totalFuel = v.fuelLogs?.reduce((sum, log) => sum + log.fuelQty, 0) || 0;
-    return { name: v.number, fuel: parseFloat(convertFuel(totalFuel)) };
-  });
-
-  const expenseData = vehicles.map(v => {
-    const totalExpense = v.maintenanceLogs?.reduce((sum, log) => sum + log.cost, 0) || 0;
-    return { name: v.number, expense: totalExpense };
+    return {
+      name: v.name,
+      totalFuel,
+      totalDistance,
+      avgMileage,
+      totalPrice
+    };
   });
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-      <div className="p-2 border rounded bg-white">
-        <h3 className="font-semibold mb-2">Fuel Usage ({settings.fuelUnit})</h3>
-        <BarChart width={350} height={250} data={fuelData}>
-          <CartesianGrid strokeDasharray="3 3" />
+    <div className="mt-6">
+      <h2 className="font-bold mb-2">Summary Charts</h2>
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <XAxis dataKey="name" />
           <YAxis />
-          <Tooltip />
-          <Bar dataKey="fuel" fill="#8884d8" />
+          <Tooltip formatter={(value, name) => {
+            if (name === "totalFuel") return [`${value} ${fuelUnit}`, "Fuel"];
+            if (name === "totalDistance") return [`${value} ${distanceUnit}`, "Distance"];
+            if (name === "avgMileage") return [`${value} ${distanceUnit}/${fuelUnit}`, "Mileage"];
+            if (name === "totalPrice") return [`${currency} ${value}`, "Cost"];
+            return value;
+          }} />
+          <Bar dataKey="totalFuel" fill="#8884d8" />
+          <Bar dataKey="totalDistance" fill="#82ca9d" />
+          <Bar dataKey="avgMileage" fill="#ffc658" />
+          <Bar dataKey="totalPrice" fill="#ff7300" />
         </BarChart>
-      </div>
-
-      <div className="p-2 border rounded bg-white">
-        <h3 className="font-semibold mb-2">Expenses ({settings.currency})</h3>
-        <BarChart width={350} height={250} data={expenseData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Bar dataKey="expense" fill="#82ca9d" />
-        </BarChart>
-      </div>
+      </ResponsiveContainer>
     </div>
   );
-};
-
-export default SummaryCharts;
+}

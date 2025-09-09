@@ -1,18 +1,15 @@
 const BIN_ID = "68b3294a43b1c97be930f889";
 const API_KEY = "$2a$10$g1kqJpzAdMvBv8./6ZwR7Od3ohSGRq6Db298bV.rCDwkohvSfPNrG"; 
 
-export const fetchData = async () => {
+export const fetchVehicles = async () => {
   const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
     headers: { "X-Master-Key": API_KEY },
   });
   const data = await res.json();
-  return {
-    vehicles: data.record.vehicles || [],
-    settings: data.record.settings || { currency: "$", distanceUnit: "km", fuelUnit: "liters" },
-  };
+  return data.record.vehicles || [];
 };
 
-export const saveData = async (vehicles, settings) => {
+export const saveVehicles = async (vehicles) => {
   await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
     method: "PUT",
     headers: {
@@ -20,6 +17,6 @@ export const saveData = async (vehicles, settings) => {
       "X-Master-Key": API_KEY,
       "X-Bin-Versioning": "false",
     },
-    body: JSON.stringify({ vehicles, settings }),
+    body: JSON.stringify({ vehicles }),
   });
 };
