@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { saveMaintenance } from "../api/jsonbin";
+import { VehicleContext } from "../context/VehicleContext";
 
-export default function MaintenanceForm() {
+export default function MaintenanceForm({ vehicle }) {
+  const { setVehicles } = useContext(VehicleContext);
   const [type, setType] = useState("");
   const [cost, setCost] = useState("");
   const [date, setDate] = useState("");
@@ -17,7 +19,8 @@ export default function MaintenanceForm() {
       odo: parseInt(odo, 10)
     };
 
-    await saveMaintenance(newRecord);
+    const updatedVehicles = await saveMaintenance(vehicle.id, newRecord);
+    setVehicles(updatedVehicles); // refresh context so UI updates
 
     // Reset form
     setType("");
