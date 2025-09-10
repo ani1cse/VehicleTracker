@@ -4,6 +4,8 @@ import VehicleForm from "./components/VehicleForm";
 import VehicleList from "./components/VehicleList";
 import SummaryCharts from "./components/SummaryCharts";
 import Settings from "./components/Settings";
+import SettingsForm from "./components/SettingsForm";
+
 
 export default function App() {
   return (
