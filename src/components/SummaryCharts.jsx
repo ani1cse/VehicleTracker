@@ -85,6 +85,8 @@ export default function SummaryCharts() {
   };
 
   return (
+    <div className="mt-6 p-4 border rounded bg-white dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700 transition-colors duration-300">
+
     <div className="mt-6">
       {/* Toggle */}
       <div className="flex justify-between items-center mb-4">
@@ -177,6 +179,7 @@ export default function SummaryCharts() {
           )}
         </BarChart>
       </ResponsiveContainer>
+    </div>
     </div>
   );
 }

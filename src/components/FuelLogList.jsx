@@ -13,7 +13,7 @@ export default function FuelLogList({ vehicle }) {
 
   return (
     <div className="mt-4">
-      <h3 className="font-bold mb-2">{vehicle.name} Fuel Logs All</h3>
+      <h3 className="font-bold mb-2">{vehicle.name} Fuel Logs</h3>
       <table className="w-full border-collapse border">
         <thead>
           <tr>
