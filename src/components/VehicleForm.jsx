@@ -1,49 +1,48 @@
-import React, { useState, useContext } from "react";
-import { VehicleContext } from "../context/VehicleContext";
-import { v4 as uuid } from "uuid";
+import React, { useState } from "react";
+import { db, auth } from "../firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 export default function VehicleForm() {
-  const { addVehicle } = useContext(VehicleContext);
   const [number, setNumber] = useState("");
   const [odo, setOdo] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    addVehicle({
-      id: uuid(),
-      number,
-      odo: Number(odo),
-      fuelLogs: [],
-      maintenanceLogs: []
-    });
-    setNumber("");
-    setOdo("");
+    if (!auth.currentUser) return;
+
+    try {
+      await addDoc(collection(db, "vehicles"), {
+        number,
+        odo: Number(odo),
+        ownerId: auth.currentUser.uid,
+        createdAt: serverTimestamp()
+      });
+      setNumber("");
+      setOdo("");
+    } catch (err) {
+      console.error("Error adding vehicle:", err);
+    }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-2 p-4 border rounded bg-white dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700 transition-colors duration-300"
-    >
+    <form onSubmit={handleSubmit} className="flex gap-2 mt-4">
       <input
         type="text"
         placeholder="Vehicle Number"
         value={number}
         onChange={(e) => setNumber(e.target.value)}
         required
-        className="border p-2 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+        className="border p-2 rounded"
       />
       <input
         type="number"
-        placeholder="ODO Reading"
+        placeholder="ODO"
         value={odo}
         onChange={(e) => setOdo(e.target.value)}
         required
-        className="border p-2 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+        className="border p-2 rounded"
       />
-      <button className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
-        Add Vehicle
-      </button>
+      <button className="bg-blue-500 text-white px-4 rounded">Add</button>
     </form>
   );
 }

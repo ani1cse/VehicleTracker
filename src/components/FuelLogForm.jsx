@@ -1,28 +1,66 @@
-import React, { useState, useContext } from "react";
-import { VehicleContext } from "../context/VehicleContext";
+import React, { useState } from "react";
+import { db } from "../firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
-export default function FuelLogForm({ vehicle }) {
-  const { updateVehicle } = useContext(VehicleContext);
-  const [liters, setLiters] = useState("");
+export default function FuelLogForm({ vehicleId }) {
   const [odo, setOdo] = useState("");
+  const [liters, setLiters] = useState("");
   const [price, setPrice] = useState("");
+  const [date, setDate] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const lastOdo = vehicle.fuelLogs.length ? vehicle.fuelLogs[vehicle.fuelLogs.length-1].odo : vehicle.odo;
-    const distance = Number(odo) - lastOdo;
-    const mileage = distance / Number(liters);
-    const newLog = { id: Date.now(), odo: Number(odo), liters: Number(liters), distance, mileage, price: Number(price) };
-    updateVehicle(vehicle.id, { fuelLogs: [...vehicle.fuelLogs, newLog] });
-    setOdo(""); setLiters(""); setPrice("");
+    if (!vehicleId) return;
+
+    try {
+      await addDoc(collection(db, "vehicles", vehicleId, "fuelLogs"), {
+        odo: Number(odo),
+        liters: Number(liters),
+        price: Number(price),
+        date,
+        createdAt: serverTimestamp()
+      });
+      setOdo("");
+      setLiters("");
+      setPrice("");
+      setDate("");
+    } catch (err) {
+      console.error("Error adding fuel log:", err);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2 mt-2">
-      <input type="number" placeholder="ODO Reading" value={odo} onChange={e => setOdo(e.target.value)} required className="border p-2 rounded" />
-      <input type="number" placeholder="Fuel (liters)" value={liters} onChange={e => setLiters(e.target.value)} required className="border p-2 rounded" />
-      <input type="number" placeholder="Fuel Price" value={price} onChange={e => setPrice(e.target.value)} required className="border p-2 rounded" />
-      <button className="bg-green-500 text-white p-2 rounded">Add Fuel Log</button>
+    <form onSubmit={handleSubmit} className="mt-2 flex gap-2 flex-wrap">
+      <input
+        type="date"
+        value={date}
+        onChange={(e) => setDate(e.target.value)}
+        className="border p-1 rounded"
+      />
+      <input
+        type="number"
+        placeholder="ODO"
+        value={odo}
+        onChange={(e) => setOdo(e.target.value)}
+        className="border p-1 rounded"
+      />
+      <input
+        type="number"
+        placeholder="Liters"
+        value={liters}
+        onChange={(e) => setLiters(e.target.value)}
+        className="border p-1 rounded"
+      />
+      <input
+        type="number"
+        placeholder="Price"
+        value={price}
+        onChange={(e) => setPrice(e.target.value)}
+        className="border p-1 rounded"
+      />
+      <button className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">
+        Add Fuel
+      </button>
     </form>
   );
 }
