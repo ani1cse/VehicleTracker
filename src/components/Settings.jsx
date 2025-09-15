@@ -1,10 +1,11 @@
 import React, { useContext, useState, useEffect } from "react";
 import { VehicleContext } from "../context/VehicleContext";
+import { auth, db } from "../firebase";
+import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 
 export default function Settings() {
-  const { settings, updateSettings } = useContext(VehicleContext);
+  const { settings, updateSettings, role } = useContext(VehicleContext);
 
-  // Local state mirrors settings for editing
   const [localCurrency, setLocalCurrency] = useState(settings.currency || "৳");
   const [localDistance, setLocalDistance] = useState(settings.distanceUnit || "km");
   const [localFuelUnit, setLocalFuelUnit] = useState(settings.fuelUnit || "L");
@@ -14,8 +15,13 @@ export default function Settings() {
   );
 
   const [showConfirm, setShowConfirm] = useState(false);
+  const [statusMsg, setStatusMsg] = useState("");
 
-  // Apply theme instantly when toggled
+  // Admin role management
+  const [targetUid, setTargetUid] = useState("");
+  const [targetRole, setTargetRole] = useState("user");
+
+  // Apply theme instantly
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
@@ -24,17 +30,42 @@ export default function Settings() {
     }
   }, [darkMode]);
 
-  const handleSave = () => {
-    updateSettings({
+  // Load settings from Firestore on mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      if (!auth.currentUser) return;
+      const ref = doc(db, "userSettings", auth.currentUser.uid);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        const data = snap.data();
+        setLocalCurrency(data.currency || "৳");
+        setLocalDistance(data.distanceUnit || "km");
+        setLocalFuelUnit(data.fuelUnit || "L");
+        setDarkMode(data.theme === "dark");
+      }
+    };
+    loadSettings();
+  }, []);
+
+  const handleSave = async () => {
+    const newSettings = {
       currency: localCurrency,
       distanceUnit: localDistance,
       fuelUnit: localFuelUnit,
       theme: darkMode ? "dark" : "light"
-    });
-    alert("Settings updated and synced!");
+    };
+
+    updateSettings(newSettings);
+
+    if (auth.currentUser) {
+      await setDoc(doc(db, "userSettings", auth.currentUser.uid), newSettings, { merge: true });
+    }
+
+    setStatusMsg("✅ Settings updated and synced!");
+    setTimeout(() => setStatusMsg(""), 3000);
   };
 
-  const handleResetConfirmed = () => {
+  const handleResetConfirmed = async () => {
     const defaults = {
       currency: "৳",
       distanceUnit: "km",
@@ -46,13 +77,36 @@ export default function Settings() {
     setLocalFuelUnit(defaults.fuelUnit);
     setDarkMode(false);
     updateSettings(defaults);
+
+    if (auth.currentUser) {
+      await setDoc(doc(db, "userSettings", auth.currentUser.uid), defaults, { merge: true });
+    }
+
     setShowConfirm(false);
-    alert("Settings reset to defaults!");
+    setStatusMsg("✅ Settings reset to defaults!");
+    setTimeout(() => setStatusMsg(""), 3000);
+  };
+
+  // Admin: change another user's role
+  const handleRoleChange = async () => {
+    if (!targetUid) return;
+    try {
+      await updateDoc(doc(db, "userRoles", targetUid), { role: targetRole });
+      setStatusMsg(`✅ Role for ${targetUid} set to ${targetRole}`);
+      setTargetUid("");
+      setTargetRole("user");
+    } catch (err) {
+      console.error(err);
+      setStatusMsg("❌ Failed to update role");
+    }
+    setTimeout(() => setStatusMsg(""), 3000);
   };
 
   return (
     <div className="p-4 border rounded my-4 bg-white dark:bg-gray-800 dark:text-gray-100 transition-colors duration-300">
       <h2 className="font-bold mb-4">Settings</h2>
+
+      {statusMsg && <div className="mb-3 text-green-500">{statusMsg}</div>}
 
       <div className="flex flex-col gap-4">
         {/* Currency */}
@@ -124,6 +178,34 @@ export default function Settings() {
           </button>
         </div>
       </div>
+
+      {/* Admin Role Management */}
+      {role === "admin" && (
+        <div className="mt-6 p-4 border rounded bg-gray-50 dark:bg-gray-700">
+          <h3 className="font-bold mb-3">Admin: Manage User Roles</h3>
+          <input
+            type="text"
+            placeholder="Enter User UID"
+            value={targetUid}
+            onChange={(e) => setTargetUid(e.target.value)}
+            className="border p-1 rounded w-full mb-2 dark:bg-gray-600 dark:border-gray-500"
+          />
+          <select
+            value={targetRole}
+            onChange={(e) => setTargetRole(e.target.value)}
+            className="border p-1 rounded w-full mb-2 dark:bg-gray-600 dark:border-gray-500"
+          >
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+          <button
+            onClick={handleRoleChange}
+            className="bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600"
+          >
+            Update Role
+          </button>
+        </div>
+      )}
 
       {/* Confirmation Modal */}
       {showConfirm && (
